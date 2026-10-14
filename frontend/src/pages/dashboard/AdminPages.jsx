@@ -1,0 +1,14 @@
+import { useCallback, useEffect, useState } from 'react';
+import { ErrorState, LoadingState, EmptyState } from '../../components/common/Feedback';
+import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/apiClient';
+
+export function AdminListPage({ resource, title }) {
+  const [data, setData] = useState(null); const [error, setError] = useState(null); const [pending, setPending] = useState(null);
+  const load = useCallback(async () => { setError(null); try { setData((await apiClient.get(`/admin/${resource}`, { params: { page: 0, size: 20 } })).data); } catch (requestError) { setError(requestError.message); } }, [resource]);
+  useEffect(() => { load(); }, [load]);
+  const action = async (request, message) => { if (!window.confirm(message)) return; setPending(request.key); try { await request.call(); await load(); } catch (requestError) { setError(requestError.message); } finally { setPending(null); } };
+  if (error) return <ErrorState message={error} onRetry={load} />;
+  if (!data) return <LoadingState label={`Loading ${title.toLowerCase()}...`} />;
+  return <><header className="page-header"><span className="eyebrow">Admin controls</span><h1>{title}</h1><p>Server-confirmed records and administrative actions.</p></header>{data.content?.length === 0 ? <EmptyState title={`No ${title.toLowerCase()} found`} message="There are no records to display yet." /> : <div className="feature-grid">{data.content.map((item) => <article className="feature-card" key={item.id}><span className="eyebrow">{item.status || 'Record'}</span><h2>{item.name || item.companyName || item.title || item.internshipTitle}</h2><p>{item.email || item.companyName || item.studentName || ''}</p>{resource === 'internships' && <div className="hero-actions">{item.status !== 'CLOSED' && <Button variant="secondary" loading={pending === `close-${item.id}`} onClick={() => action({ key: `close-${item.id}`, call: () => apiClient.patch(`/admin/internships/${item.id}/close`) }, 'Close this internship? Students will no longer be able to apply.')}>Close</Button>}<Button variant="secondary" loading={pending === `delete-${item.id}`} onClick={() => action({ key: `delete-${item.id}`, call: () => apiClient.delete(`/admin/internships/${item.id}`) }, 'Delete this internship? This only succeeds when it has no applications.')}>Delete</Button></div>}{(resource === 'students' || resource === 'companies') && <Button variant="secondary" loading={pending === `status-${item.id}`} onClick={() => { const next = item.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; action({ key: `status-${item.id}`, call: () => apiClient.patch(`/admin/users/${item.id}/status`, { status: next }) }, `${next === 'INACTIVE' ? 'Deactivate' : 'Reactivate'} this account?`); }}>{item.status === 'ACTIVE' ? 'Deactivate account' : 'Reactivate account'}</Button>}</article>)}</div>}</>;
+}

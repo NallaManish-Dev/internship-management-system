@@ -1,0 +1,32 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.npm-cache/
+
+# Backend
+backend/target/
+backend/.env
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+Thumbs.db
+.DS_Store
+
+
+# Project documentation not needed for deployment
+AGENTS.md
+API_SPECS.md
+CODEX_MASTER_PROMPT.md
+DEPLOYMENT.md
+PRD.md
+TRD.md
+UI_SPECS*.md
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+
