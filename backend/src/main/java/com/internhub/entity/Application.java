@@ -1,20 +1,7 @@
 package com.internhub.entity;
-
-import jakarta.persistence.*;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-@Entity @Table(name = "applications", uniqueConstraints = @UniqueConstraint(name = "uk_application_student_internship", columnNames = {"student_id", "internship_id"}), indexes = {@Index(name = "idx_applications_student", columnList = "student_id"), @Index(name = "idx_applications_internship", columnList = "internship_id"), @Index(name = "idx_applications_status", columnList = "status")})
-public class Application {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "student_id", nullable = false) private StudentProfile student;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "internship_id", nullable = false) private Internship internship;
-    @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private ApplicationStatus status;
-    @Column(name = "applied_at", nullable = false, updatable = false) private Instant appliedAt;
-    @Column(name = "updated_at", nullable = false) private Instant updatedAt;
-    @Version private Long version;
-    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @OrderBy("changedAt ASC") private List<ApplicationStatusHistory> statusHistory = new ArrayList<>();
-    public Long getId() { return id; } public StudentProfile getStudent() { return student; } public void setStudent(StudentProfile v) { student = v; } public Internship getInternship() { return internship; } public void setInternship(Internship v) { internship = v; } public ApplicationStatus getStatus() { return status; } public void setStatus(ApplicationStatus v) { status = v; } public Instant getAppliedAt() { return appliedAt; } public void setAppliedAt(Instant v) { appliedAt = v; } public Instant getUpdatedAt() { return updatedAt; } public void setUpdatedAt(Instant v) { updatedAt = v; } public Long getVersion() { return version; } public List<ApplicationStatusHistory> getStatusHistory() { return statusHistory; }
+import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.mongodb.core.index.CompoundIndex; import org.springframework.data.mongodb.core.index.Indexed; import org.springframework.data.mongodb.core.mapping.DBRef; import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.Instant; import java.util.ArrayList; import java.util.List;
+@Document("applications") @CompoundIndex(name="student_internship_unique", def="{'studentId': 1, 'internshipId': 1}", unique=true) public class Application {
+ @Id private Long id; @Indexed private Long studentId; @DBRef private StudentProfile student; @Indexed private Long internshipId; @Indexed private Long companyId; @DBRef private Internship internship; private ApplicationStatus status; private Instant appliedAt; private Instant updatedAt; @Version private Long version; private List<ApplicationStatusHistory> statusHistory=new ArrayList<>();
+ public Long getId(){return id;} public void setId(Long v){id=v;} public Long getStudentId(){return studentId;} public StudentProfile getStudent(){return student;} public void setStudent(StudentProfile v){student=v;studentId=v==null?null:v.getId();} public Long getInternshipId(){return internshipId;} public Internship getInternship(){return internship;} public void setInternship(Internship v){internship=v;internshipId=v==null?null:v.getId();companyId=v==null?null:v.getCompanyId();} public Long getCompanyId(){return companyId;} public ApplicationStatus getStatus(){return status;} public void setStatus(ApplicationStatus v){status=v;} public Instant getAppliedAt(){return appliedAt;} public void setAppliedAt(Instant v){appliedAt=v;} public Instant getUpdatedAt(){return updatedAt;} public void setUpdatedAt(Instant v){updatedAt=v;} public Long getVersion(){return version;} public List<ApplicationStatusHistory> getStatusHistory(){return statusHistory;}
 }

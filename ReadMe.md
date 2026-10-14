@@ -18,11 +18,11 @@ A web-based platform that connects students with internship opportunities, helps
 - **Spring Web** for REST APIs
 - **Spring Security** for authentication and authorization
 - **JWT** for token-based authentication
-- **Spring Data JPA / Hibernate** for database access
+- **Spring Data MongoDB** for database access
 - **Maven** as the build tool, if the backend is generated with Maven
 
 ### Database
-- **MySQL**
+- **MongoDB**
 
 The backend is the source of truth for authentication, authorization, validation, application workflows, and data access. Frontend route guards improve the user experience but do not replace backend security checks.
 
@@ -88,7 +88,7 @@ Install the following before running the project:
 
 - Node.js and npm
 - Java Development Kit (JDK) 21
-- MySQL Server
+- MongoDB Community Server or MongoDB Atlas
 - Git
 - An IDE or editor, such as VS Code or IntelliJ IDEA
 
@@ -101,30 +101,20 @@ java --version
 git --version
 ```
 
-Also verify that MySQL is running and that the database credentials are available locally.
+Also verify that MongoDB is running and that its connection URI is available locally.
 
 ## Configuration
 
 ### 1. Create the database
 
-Create a local MySQL database. The database name below is an example; use the actual name configured in the backend:
-
-```sql
-CREATE DATABASE internship_management;
-```
-
-Use a dedicated local database user where possible. Do not commit database passwords or other secrets.
+Start a local MongoDB server. The application creates and uses the `internship_management` database from its connection URI. Do not commit database credentials or other secrets.
 
 ### 2. Configure the backend
 
 The backend foundation reads these variables (see `backend/.env.example`):
 
 ```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=internship_management
-DB_USERNAME=your_local_mysql_username
-DB_PASSWORD=your_local_mysql_password
+MONGODB_URI=mongodb://localhost:27017/internship_management
 JWT_SECRET=replace_with_a_secure_local_secret
 FRONTEND_ORIGIN=http://localhost:5173
 SERVER_PORT=8080
@@ -136,7 +126,7 @@ ADMIN_BOOTSTRAP_PASSWORD=
 
 To provision the first administrator, set `ADMIN_BOOTSTRAP_EMAIL` and `ADMIN_BOOTSTRAP_PASSWORD` in the local backend environment before starting Spring Boot. Provisioning is idempotent and refuses to change an existing non-admin account into an administrator. Public registration never accepts an admin role.
 
-The Spring Boot configuration should map the chosen variables to the datasource, JWT settings, and CORS configuration. Use versioned database migrations if configured in the technical design; do not rely on destructive automatic schema updates in production.
+The Spring Boot configuration maps `MONGODB_URI`, JWT settings, and CORS configuration. The application creates the required MongoDB indexes at startup; use a controlled rollout for index changes in production.
 
 ### 3. Configure the frontend
 
@@ -154,9 +144,9 @@ The API URL must match the actual backend port and API prefix.
 
 The exact scripts and configuration depend on the files generated in the repository. Inspect `package.json` and `pom.xml` and use the commands they support.
 
-### 1. Start MySQL
+### 1. Start MongoDB
 
-Start the MySQL service and ensure the configured database exists.
+Start MongoDB and ensure that `MONGODB_URI` points to it.
 
 ### 2. Start the backend
 
@@ -206,7 +196,7 @@ All project documents must describe the same selected stack:
 
 - **Frontend:** React + JavaScript + CSS (with Bootstrap 5, React Router, and Axios where used).
 - **Backend:** Java 21 + Spring Boot + Spring Security + JWT.
-- **Database:** MySQL, accessed through Spring Data JPA/Hibernate.
+- **Database:** MongoDB, accessed through Spring Data MongoDB.
 - **API style:** REST API under the documented `/api/v1` prefix.
 
 Do not switch the frontend to TypeScript, replace React with plain HTML pages, or change the backend/database stack unless the project owner explicitly requests it. If an existing generated project differs, report the mismatch before making broad changes.
@@ -252,7 +242,7 @@ cd frontend
 npm run build
 ```
 
-The current application includes the Spring Boot backend, MySQL configuration, versioned migrations, authentication, and role-specific API workflows. Verify any newly added workflow against its API contract and database behavior before treating it as production-ready.
+The current application includes the Spring Boot backend, MongoDB configuration, authentication, and role-specific API workflows. Verify any newly added workflow against its API contract and database behavior before treating it as production-ready.
 
 
 ## License

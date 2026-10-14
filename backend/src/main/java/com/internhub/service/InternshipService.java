@@ -9,7 +9,9 @@ import com.internhub.repository.CompanyProfileRepository;
 import com.internhub.repository.InternshipRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,27 +19,29 @@ import org.springframework.transaction.annotation.Transactional;
 public class InternshipService {
     private final InternshipRepository internships;
     private final CompanyProfileRepository companies;
+    private final MongoTemplate mongoTemplate;
 
-    public InternshipService(InternshipRepository internships, CompanyProfileRepository companies) {
+    public InternshipService(InternshipRepository internships, CompanyProfileRepository companies, MongoTemplate mongoTemplate) {
         this.internships = internships;
         this.companies = companies;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Transactional(readOnly = true)
     public Page<InternshipResponse> listPublic(String query, String location, String workMode, Pageable pageable) {
-        Specification<Internship> specification = (root, criteriaQuery, builder) -> {
-            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
-            predicates.add(builder.equal(root.get("status"), InternshipStatus.OPEN));
-            if (query != null && !query.isBlank()) {
-                String term = "%" + query.trim().toLowerCase(java.util.Locale.ROOT) + "%";
-                var company = root.join("company");
-                predicates.add(builder.or(builder.like(builder.lower(root.get("title")), term), builder.like(builder.lower(root.get("description")), term), builder.like(builder.lower(root.get("location")), term), builder.like(builder.lower(company.get("companyName")), term)));
-            }
-            if (location != null && !location.isBlank()) predicates.add(builder.like(builder.lower(root.get("location")), "%" + location.trim().toLowerCase(java.util.Locale.ROOT) + "%"));
-            if (workMode != null && !workMode.isBlank()) predicates.add(builder.equal(builder.lower(root.get("workMode")), workMode.trim().toLowerCase(java.util.Locale.ROOT)));
-            return builder.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
-        };
-        return internships.findAll(specification, pageable).map(InternshipResponse::from);
+        Query mongoQuery = new Query(Criteria.where("status").is(InternshipStatus.OPEN));
+        if (query != null && !query.isBlank()) {
+            String expression = java.util.regex.Pattern.quote(query.trim());
+            var companyIds = companies.findAll().stream().filter(company -> company.getCompanyName() != null && company.getCompanyName().matches("(?is).*" + expression + ".*")).map(com.internhub.entity.CompanyProfile::getId).toList();
+            mongoQuery.addCriteria(new Criteria().orOperator(
+                    Criteria.where("title").regex(expression, "i"), Criteria.where("description").regex(expression, "i"),
+                    Criteria.where("location").regex(expression, "i"), Criteria.where("companyId").in(companyIds)));
+        }
+        if (location != null && !location.isBlank()) mongoQuery.addCriteria(Criteria.where("location").regex(java.util.regex.Pattern.quote(location.trim()), "i"));
+        if (workMode != null && !workMode.isBlank()) mongoQuery.addCriteria(Criteria.where("workMode").regex("^" + java.util.regex.Pattern.quote(workMode.trim()) + "$", "i"));
+        long total = mongoTemplate.count(mongoQuery, Internship.class);
+        var records = mongoTemplate.find(mongoQuery.with(pageable), Internship.class);
+        return new org.springframework.data.domain.PageImpl<>(records, pageable, total).map(InternshipResponse::from);
     }
 
     @Transactional(readOnly = true)

@@ -1,13 +1,9 @@
 spring:
-  datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=true&requireSSL=true&serverTimezone=UTC
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  flyway:
-    enabled: true
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE:internship_management}
+      auto-index-creation: true
 server:
   forward-headers-strategy: framework
   error:

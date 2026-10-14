@@ -68,7 +68,7 @@ public class AuthService {
         String normalizedEmail = email.trim().toLowerCase();
         if (userRepository.existsByEmail(normalizedEmail)) throw new EmailAlreadyExistsException();
         User user = new User(); user.setFullName(name.trim()); user.setEmail(normalizedEmail); user.setPasswordHash(passwordEncoder.encode(password)); user.setRole(role);
-        try { return userRepository.saveAndFlush(user); }
+        try { return userRepository.save(user); }
         catch (DataIntegrityViolationException exception) { throw new EmailAlreadyExistsException(); }
     }
 }
