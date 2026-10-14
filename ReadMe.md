@@ -76,12 +76,8 @@ internship-management-system/
 │   │   └── test/
 │   ├── .env.example                  # If environment files are used by the project
 │   └── pom.xml
-├── PRD.md
-├── TRD.md
-├── API_SPECS.md
-├── AGENTS.md
 ├── README.md
-└── internship_management_system_ui_spec.md
+
 ```
 
 This is the planned structure. If the repository already uses a different structure, inspect it and follow the existing structure instead of moving files unnecessarily.
@@ -203,17 +199,6 @@ For a Vite setup, the frontend commonly runs on `http://localhost:5173`. Use the
 - Check the browser console and backend logs if a request fails.
 - Do not assume that a feature works until it has been tested against the real backend and database.
 
-## Main Documentation
-
-Read these files before implementing major features:
-
-| File | Purpose |
-|---|---|
-| `internship_management_system_ui_spec.md` | UI style, pages, routes, reusable components, responsive behavior, and interactions |
-| `PRD.md` | Product goals, scope, roles, workflows, business requirements, and acceptance criteria |
-| `TRD.md` | Technical architecture, Java/Spring Boot backend, React frontend, MySQL, security, and data model |
-| `API_SPECS.md` | REST endpoints, request/response contracts, validation, and authorization |
-| `AGENTS.md` | Instructions for Codex and other coding agents |
 
 ### Technology consistency
 
@@ -269,9 +254,6 @@ npm run build
 
 The current application includes the Spring Boot backend, MySQL configuration, versioned migrations, authentication, and role-specific API workflows. Verify any newly added workflow against its API contract and database behavior before treating it as production-ready.
 
-## Production deployment
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the production environment variables, build commands, database migration guidance, HTTPS/CORS requirements, SPA hosting configuration, and post-deployment checks.
 
 ## License
 
