@@ -23,8 +23,16 @@ CREATE TABLE student_profiles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE student_skills (
-    student_profile_id BIGINT NOT NULL, skill VARCHAR(80) NOT NULL,
-    CONSTRAINT fk_student_skill_profile FOREIGN KEY (student_profile_id) REFERENCES student_profiles(id) ON DELETE CASCADE,
+    student_profile_id BIGINT NOT NULL,
+    skill VARCHAR(80) NOT NULL,
+
+    PRIMARY KEY (student_profile_id, skill),
+
+    CONSTRAINT fk_student_skill_profile
+        FOREIGN KEY (student_profile_id)
+        REFERENCES student_profiles(id)
+        ON DELETE CASCADE,
+
     INDEX idx_student_skills_profile (student_profile_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -48,8 +56,16 @@ CREATE TABLE internships (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE internship_skills (
-    internship_id BIGINT NOT NULL, skill VARCHAR(80) NOT NULL,
-    CONSTRAINT fk_internship_skill_internship FOREIGN KEY (internship_id) REFERENCES internships(id) ON DELETE CASCADE,
+    internship_id BIGINT NOT NULL,
+    skill VARCHAR(80) NOT NULL,
+
+    PRIMARY KEY (internship_id, skill),
+
+    CONSTRAINT fk_internship_skill_internship
+        FOREIGN KEY (internship_id)
+        REFERENCES internships(id)
+        ON DELETE CASCADE,
+
     INDEX idx_internship_skills_internship (internship_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
